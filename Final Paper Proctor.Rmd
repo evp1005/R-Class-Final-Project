@@ -7,6 +7,11 @@ fontsize: 12pt
 bibliography: "R_final_project_references.bib"
 ---
 
+**Abstract**
+Merkel Cell Carcinoma is a rare neuroendrocrine skin cancer with very few treatment options. Here, investigation of four inhibitors in three combinations is analysed to determine the effectiveness of treatment on standard MCC cell like MKL1. Combinations were tested using sythetic lethality assays. It was found that all treatments were effective. Prexasertib and Gemcitabine were found to be much stronger than Adavosertib.
+
+
+\pagebreak
 **Introduction** 
 
 Merkel Cell Carcinoma (MCC) is a rare neuroendocrine skin cancer. It is asymptomatic and presents as a hard red nodule on the skin. There are several risk factors including old age, fair skin, and immunosuppression. Loco-regional metastasis is already present in ~30% of patients at primary diagnosis due to frequent misdiagnosis as benign(@bsdclvn17). This has led to a 33%-46% mortality rate(@hhnsjbw16).
@@ -16,7 +21,7 @@ Treatments for MCC are extremely limited and mostly consist of surgery or chemot
 \pagebreak
 **Methods** 
 
-MCC cells (MKL1 and Waga) were grown at 37℃ with 5% CO2 in RPMI media with 10% FBS, 1% Penstrep, and 1% Glutamax. Media changes were done every three to four days for optimal cell growth and health. For experiments, cells were washed with PBS and treated with Versene to break up cell aggregates. Cells were counted to 10,000 cells/mL and plated in 96 well plates, 200µL per well. Depending on which inhibitor was used, Gemcitabine, Ceralasertib, Prexasertib, or Adavosertib, different concentrations of inhibitor were used. One would be added to the plate top down and the other would be added to the plate right to left, leaving 4 wells empty in the bottom left corner as control wells. Three different treatment lengths were used, four days, eight days, and twelve days. 
+MCC cells (MKL1) were grown at 37℃ with 5% CO2 in RPMI media with 10% FBS, 1% Penstrep, and 1% Glutamax. Media changes were done every three to four days for optimal cell growth and health. For experiments, cells were washed with PBS and treated with Versene to break up cell aggregates. Cells were counted to 10,000 cells/mL and plated in 96 well plates, 200µL per well. Depending on which inhibitor was used, Gemcitabine, Ceralasertib, Prexasertib, or Adavosertib, different concentrations of inhibitor were used. One would be added to the plate top down and the other would be added to the plate right to left, leaving 4 wells empty in the bottom left corner as control wells. Three different treatment lengths were used, four days, eight days, and twelve days. 
 
 After the designated incubation period, 30µL of CellTiterGlo was added to each of the wells of the plate. This was left to incubate for 15-30 minutes and then read on the M2-flourescent plate reader. Originally the results were analyzed using SynergyFinder, which does statistical analysis to determine the synergistic or antagonistic effects of your drug combinations(@zwamstpt22). Recently, data has be reanalyzed using R v4.4.2 to determine synergistic or antagonistic effects(@t24).
 
