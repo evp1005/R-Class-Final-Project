@@ -1,0 +1,281 @@
+---
+title: "Synergy of Various Inhibitors of the ATR-CHK1-WEE1 axis in Merkel Cell Carcinoma"
+author: "Evie Proctor"
+date: "2024-11-30"
+output: pdf_document
+fontsize: 12pt
+bibliography: "R_final_project_references.bib"
+---
+
+**Introduction** 
+
+Merkel Cell Carcinoma (MCC) is a rare neuroendocrine skin cancer. It is asymptomatic and presents as a hard red nodule on the skin. There are several risk factors including old age, fair skin, and immunosuppression. Loco-regional metastasis is already present in ~30% of patients at primary diagnosis due to frequent misdiagnosis as benign(@bsdclvn17). This has led to a 33%-46% mortality rate(@hhnsjbw16).
+
+Treatments for MCC are extremely limited and mostly consist of surgery or chemotherapy, so new therapeutic targets need to be found and new drugs for these targets need to be tested. MCC is addicted to the ATR-CHK1-WEE1 pathway (manuscript in progress). Using synthetic lethality to test combinations of inhibitors in this pathway has proven highly effective in determining optimal dosage for combination treatments. The question that needs to be answered is which inhibitors have the lowest effective dosage which coorelates to them being the best for treatments. Additionally, which combinations are most effective at killing MCC cells.
+
+\pagebreak
+**Methods** 
+
+MCC cells (MKL1 and Waga) were grown at 37℃ with 5% CO2 in RPMI media with 10% FBS, 1% Penstrep, and 1% Glutamax. Media changes were done every three to four days for optimal cell growth and health. For experiments, cells were washed with PBS and treated with Versene to break up cell aggregates. Cells were counted to 10,000 cells/mL and plated in 96 well plates, 200µL per well. Depending on which inhibitor was used, Gemcitabine, Ceralasertib, Prexasertib, or Adavosertib, different concentrations of inhibitor were used. One would be added to the plate top down and the other would be added to the plate right to left, leaving 4 wells empty in the bottom left corner as control wells. Three different treatment lengths were used, four days, eight days, and twelve days. 
+
+After the designated incubation period, 30µL of CellTiterGlo was added to each of the wells of the plate. This was left to incubate for 15-30 minutes and then read on the M2-flourescent plate reader. Originally the results were analyzed using SynergyFinder, which does statistical analysis to determine the synergistic or antagonistic effects of your drug combinations(@zwamstpt22). Recently, data has be reanalyzed using R v4.4.2 to determine synergistic or antagonistic effects(@t24).
+
+\pagebreak
+**Results**
+
+```{r, fig.cap = 'Percent viability of Adavosertib, Prexasertib, and Gemitabine dependant on combination with Ceralasertib. All treatments are in nM.'}
+library(tidyverse)
+library(dplyr)
+
+drug_table <- read.csv("Drug Treatment Table Dataset.csv")
+
+ggplot(data = drug_table, mapping = aes(x = ConcA, y = X.Viability, color = DrugB)) +
+  geom_point() + 
+  scale_x_log10() +
+  xlab('Ceralasertib Concentration (nM)') +
+  ylab('Percent Viability') +
+  ggtitle('Percent Viability Dependant on Ceralasertib Concentration')
+
+```
+
+Figure 1 is demonstrating the distribution of all treatments compared to Ceralasertib. These all follow a common trend of higher percent viability at lower concentrations of Ceralasertib and lower percent viability at higher concentrations of Ceralasertib. Notable outliers are present with Prexasertib. Figure 2 also demonstrates distribution of each treatment individually. Gemcitabine has the smallest distribution and Prexasertib and Adavosertib have similar distributions. Notably, Prexasertib and Gemcitabine both have lower overall viability.
+
+```{r, fig.cap = 'Distribution of perent viability of Adavosertib, Prexasertib, and Gemcitabine each in combination with Ceralasertib.'}
+ggplot(drug_table, aes(x = interaction(DrugA, DrugB), y = X.Viability, fill = DrugB)) +
+  geom_boxplot() +
+  ggtitle('Percent Viability Distribution by Drug Combination') +
+  xlab('Drug Combination') +
+  ylab('Percent Viability') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+```
+
+```{r, fig.cap = 'Dose response curve of Adavosertib (A), Prexasertib (B), Gemcitabine (C), and Ceralasertib (D). All showing sigmoidal curve and optimal drug concetration in nM.'}
+library(patchwork)
+
+adavosertib_table <- drug_table %>%
+  filter(DrugB == 'Adavosertib')
+
+plot1 <- ggplot(data = adavosertib_table, mapping = aes(x = ConcB, y = X.Viability)) +
+  geom_smooth(color = 'purple') +
+  scale_x_log10() +
+  xlab('Adavosertib (nM)') +
+  ylab('Percent Viability') +
+  ggtitle('A.')
+
+
+prexasertib_table <- drug_table %>%
+  filter(DrugB == 'Prexasertib')
+
+plot2 <- ggplot(data = prexasertib_table, mapping = aes(x = ConcB, y = X.Viability)) +
+  geom_smooth(color = 'purple') +
+  scale_x_log10() +
+  xlab('Prexasertib (nM)') +
+  ylab('Percent Viability') +
+  ggtitle('B.')
+
+
+gemcitabine_table <- drug_table %>%
+  filter(DrugB == 'Gemcitabine')
+
+plot3 <- ggplot(data = gemcitabine_table, mapping = aes(x = ConcB, y = X.Viability)) +
+  geom_smooth(color = 'purple') +
+  scale_x_log10() +
+  xlab('Gemcitabine (nM)') +
+  ylab('Percent Viability') +
+  ggtitle('C.')
+
+
+ceralasertib_table <- drug_table %>%
+  filter(DrugA == 'Ceralasertib')
+
+plot4 <- ggplot(data = ceralasertib_table, mapping = aes(x = ConcB, y = X.Viability)) +
+  geom_smooth(color = 'purple') +
+  scale_x_log10() +
+  xlab('Ceralasertib (nM)') +
+  ylab('Percent Viability') +
+  ggtitle('D.')
+
+combined_plot <- (plot1 | plot2) / (plot3 | plot4)
+
+combined_plot + plot_annotation(caption = '')
+```
+
+Figure 3 is demonstrating the dose reponse curves of each of the drugs in the study disregarding the effects of combination with other inhibitors. IC50 values seen in these graphs show the optimal concentration of drug for treatment. IC50 values vary depending on treatment, with Prexasertib and Gemcitabine having the lowest values.
+
+```{r, fig.cap = 'Heatmaps of Adavosertib (A), Prexasertib (B), and Gemcitabine(C) in combination with Ceralasertib showing overall trends of higher vs lower viability within each combination.'}
+adavosertib_table$X.Viability <- as.numeric(adavosertib_table$X.Viability)
+adavosertib_table$ConcA <- as.numeric(as.character(adavosertib_table$ConcA))
+adavosertib_table$ConcB <- as.numeric(as.character(adavosertib_table$ConcB))
+range(adavosertib_table$X.Viability, na.rm = TRUE)
+
+map1 <- ggplot(adavosertib_table, aes(x = ConcA, y = ConcB, fill = X.Viability)) +
+  geom_tile() +
+  scale_x_log10() +
+  scale_y_log10() +
+  scale_fill_gradient(low = "blue", high = "red", limits = c(5.57, 130.68)) +
+  xlab('Adavosertib (nM)') +
+  ylab('Ceralasertib (nM)') +
+  ggtitle('A.')
+
+
+
+prexasertib_table$X.Viability <- as.numeric(prexasertib_table$X.Viability)
+prexasertib_table$ConcA <- as.numeric(as.character(prexasertib_table$ConcA))
+prexasertib_table$ConcB <- as.numeric(as.character(prexasertib_table$ConcB))
+range(prexasertib_table$X.Viability, na.rm = TRUE)
+
+map2 <- ggplot(prexasertib_table, aes(x = ConcA, y = ConcB, fill = X.Viability)) +
+  geom_tile() +
+  scale_x_log10() +
+  scale_y_log10() +
+  scale_fill_gradient(low = "blue", high = "red", limits = c(3.28, 220.79)) +
+  xlab('Prexasertib (nM)') +
+  ylab('Ceralasertib (nM)') +
+  ggtitle('B.')
+
+
+
+gemcitabine_table$X.Viability <- as.numeric(gemcitabine_table$X.Viability)
+gemcitabine_table$ConcA <- as.numeric(as.character(gemcitabine_table$ConcA))
+gemcitabine_table$ConcB <- as.numeric(as.character(gemcitabine_table$ConcB))
+range(gemcitabine_table$X.Viability, na.rm = TRUE)
+
+map3 <- ggplot(gemcitabine_table, aes(x = ConcA, y = ConcB, fill = X.Viability)) +
+  geom_tile() +
+  scale_x_log10() +
+  scale_y_log10() +
+  scale_fill_gradient(low = "blue", high = "red", limits = c(1.32, 100)) +
+  xlab('Gemcitabine (nM)') +
+  ylab('Ceralasertib (nM)') +
+  ggtitle('C.')
+
+combined_maps <- (map1) / (map2) / (map3)
+
+combined_maps + plot_annotation(caption = '') +
+  plot_layout(heights = c(200, 200, 200))
+```
+
+Heatmaps in Figure 4 are demonstrating the effectiveness of treatment combinations with blue boxes having increased drug combination effectiveness and red boxes having decreased drug combination effectiveness. Overall trends show that high concentrations of drug combinations have increased effectiveness. Specifically Gemcitabine and Prexasertib are highly synergistic with Ceralasertib. Similar synergy is seen in Figures 5, 6, and 7, which shows 2D and 3D plots of the graphs (3D plots will show up in alternate windows when run). Adavosertib with Ceralasertib shows a higher slope which coorelates to increased cell viability whereas Ceralasertib in combination with Prexasertib and Gemcitabine do not have similar slope.
+
+```{r, fig.cap = '3D plots, both still and interactive, showing the general trend of treatment viability for Adavosertib, Prexasertib, and Gemcitabine in combination with Ceralasertib.'}
+
+library(rgl)
+
+adavosertib_matrix <- xtabs(X.Viability ~ ConcA + ConcB, data = adavosertib_table)
+x <- sort(unique(adavosertib_table$ConcA))
+y <- sort(unique(adavosertib_table$ConcB))
+
+persp(
+  x = x,
+  y = y,
+  z = adavosertib_matrix,
+  col = "lightpink",
+  theta = 120,
+  phi = 20,
+  expand = 0.2,
+  ticktype = 'detailed',
+  xlab = "Ceralasertib (nM)",
+  ylab = "Adavosertib (nM)",
+  zlab = "Percent Viability",
+  main = "3D Plot of Viability of Ceralasertib with Adavosertib"
+)
+
+#this is the same plot but in 3D!
+persp3d(
+  x = x,
+  y = y,
+  z = adavosertib_matrix,
+  col = "lightpink",
+  ticktype = 'detailed',
+  xlab = "Ceralasertib (nM)",
+  ylab = "Adavosertib (nM)",
+  zlab = "Percent Viability",
+  main = "3D Plot of Viability of Ceralasertib with Adavosertib"
+)
+
+
+
+prexasertib_matrix <- xtabs(X.Viability ~ ConcA + ConcB, data = prexasertib_table)
+x <- sort(unique(prexasertib_table$ConcA))
+y <- sort(unique(prexasertib_table$ConcB))
+
+persp(
+  x = x,
+  y = y,
+  z = prexasertib_matrix,
+  col = "lightgreen",
+  theta = 120,
+  phi = 20,
+  expand = 0.2,
+  ticktype = 'detailed',
+  xlab = "Ceralasertib (nM)",
+  ylab = "Prexasertib (nM)",
+  zlab = "Percent Viability",
+  main = "3D Plot of Viability of Ceralasertib with Prexasertib"
+)
+
+persp3d(
+  x = x,
+  y = y,
+  z = prexasertib_matrix,
+  col = "lightgreen",
+  ticktype = 'detailed',
+  xlab = "Ceralasertib (nM)",
+  ylab = "Prexasertib (nM)",
+  zlab = "Percent Viability",
+  main = "3D Plot of Viability of Ceralasertib with Prexasertib"
+)
+
+
+gemcitabine_matrix <- xtabs(X.Viability ~ ConcA + ConcB, data = gemcitabine_table)
+x <- sort(unique(gemcitabine_table$ConcA))
+y <- sort(unique(gemcitabine_table$ConcB))
+
+persp(
+  x = x,
+  y = y,
+  z = gemcitabine_matrix,
+  col = "lightblue",
+  theta = 120,
+  phi = 20,
+  expand = 0.2,
+  ticktype = 'detailed',
+  xlab = "Ceralasertib (nM)",
+  ylab = "Gemcitabine (nM)",
+  zlab = "Percent Viability",
+  main = "3D Plot of Viability of Ceralasertib with Gemcitabine"
+)
+
+persp3d(
+  x = x,
+  y = y,
+  z = gemcitabine_matrix,
+  col = "lightblue",
+  ticktype = 'detailed',
+  xlab = "Ceralasertib (nM)",
+  ylab = "Gemcitabine (nM)",
+  zlab = "Percent Viability",
+  main = "3D Plot of Viability of Ceralasertib with Gemcitabine"
+)
+
+#cannot figure out how to combine these into one figure because the patchwork package and the rgl package are incompatable
+
+```
+
+\pagebreak
+**Discussion**
+
+Three different combinations of treatments were looked at for this analysis. Adavosertib with Ceralasertib, Prexasertib with Ceralasertib, and Gemcitabine with Ceralasertib. All of these combinations of treatments have been found to be effective at killing the cells. Figure 1 demonstrates that there is an overall decrease in the viability when looking at Ceralasertib, regardless of the drug it is combined with. Looking at which treatments are more effective there is a general trend where Gemcitabine and Prexasertib are most effective when combined with Ceralasertib. 
+
+Figure 2 shows that there is a smaller distribution for Gemcitabine which would suggest that the treatments are more potent. Additionally, there is a lower mean percent viability for Prexasertib, regardless of its larger distribution, which can suggest that it would be effective at lower concentrations. The dose reponse curves in Figure 3 also elucidates on drug potency where Prexasertib and Gemcitabine have much steeper curves earlier, meaning that the IC50 values are lower. Notably, the Ceralasertib does not have a steep curve, this could be because there were three combination treatments pulled from in order to create that curve versus only one for the other three drugs. Testing each drug individually and then comparing to the combination treatments would be more effective for determining true IC50 values.
+
+Lastly, Figures 4, 5, 6, and 7 display the effects of the drugs in combination. The heatmaps are showing high and low percent viability of the cells, all of which show a similar trend that at high concentrations of each drug combination. Notably, Adavosertib has higher overall percent viability rates, which coincides with the previous analysis that it is not as potent of a drug. Additionally, Prexasertib and Gemcitabine are showing trends of almost complete inhibition at most doses except the lowest. This is consistent with the previous analysis that these two drugs are more effective than Adavosertib. Notably, Gemcitabine is the most potent here, showing only one row of high viability and the rest showing low viability. This suggests that the combination of Ceralasertib and Gemcitabine is the most effective treatment in MCC. Figures 5, 6, and 7 support these conclusions.
+
+Ultimately, all three of these combination treatments, Adavosertib with Ceralasertib, Prexasertib and Ceralasertib, and Gemcitabine and Ceralasertib, are all effective. The combination with Gemcitabine proved to be the most effective through analysis of the given data. This is unsurprising since Gemcitabine is a chemotherapeutic agent. To further confirm these results more data should be used in subsequent analyses and statistical analyses can be used such as calculating the BLISS scores. This would give synergistic outputs that would confirm preliminary analysis done here.
+
+\pagebreak
+**References**
+
+
